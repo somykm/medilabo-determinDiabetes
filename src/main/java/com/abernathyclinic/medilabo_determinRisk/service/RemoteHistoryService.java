@@ -2,6 +2,7 @@ package com.abernathyclinic.medilabo_determinRisk.service;
 
 import com.abernathyclinic.medilabo_determinRisk.model.PatientHistory;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -14,8 +15,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class RemoteHistoryService {
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final String historyUrl = "http://localhost:8083/api/history";
+
+    @Autowired
+    public RemoteHistoryService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     public List<String> getNoteTextsByPatientId(Integer id) {
         try {
