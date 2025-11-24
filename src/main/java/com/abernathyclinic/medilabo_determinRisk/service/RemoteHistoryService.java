@@ -32,6 +32,8 @@ public class RemoteHistoryService {
                 log.warn("No patient notes found for patientId={}", id);
                 return Collections.emptyList();
             }
+            log.debug("PatientHistory objects: {}", Arrays.toString(response.getBody()));
+
             List<String> notes= Arrays.stream(response.getBody())
                     .flatMap(history -> history.getNotes().stream())
                     .collect(Collectors.toList());
