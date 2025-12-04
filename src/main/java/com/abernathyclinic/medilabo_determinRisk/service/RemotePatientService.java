@@ -6,11 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 @Slf4j
 @Service
 public class RemotePatientService {
     private final RestTemplate restTemplate;
-    private final String patUrl = "http://localhost:8085/api/patient";
+    private final String patUrl = "http://localhost:8081/api/patient";
 
     @Autowired
     public RemotePatientService(RestTemplate restTemplate) {

@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 @Service
 public class RemoteHistoryService {
     private final RestTemplate restTemplate;
-    private final String historyUrl = "http://localhost:8085/api/history";
+    private final String historyUrl = "http://localhost:8083/api/history";
+
 
     @Autowired
     public RemoteHistoryService(RestTemplate restTemplate) {
@@ -28,19 +29,19 @@ public class RemoteHistoryService {
         try {
             ResponseEntity<PatientHistory[]> response = restTemplate.getForEntity(
                     historyUrl + "/patient/" + id, PatientHistory[].class);
-            if(response.getBody()== null){
+            if (response.getBody() == null) {
                 log.warn("No patient notes found for patientId={}", id);
                 return Collections.emptyList();
             }
             log.debug("PatientHistory objects: {}", Arrays.toString(response.getBody()));
 
-            List<String> notes= Arrays.stream(response.getBody())
+            List<String> notes = Arrays.stream(response.getBody())
                     .flatMap(history -> history.getNotes().stream())
                     .collect(Collectors.toList());
             log.debug("Fetched {} notes for patientId={}", notes.size(), id);
             return notes;
         } catch (Exception e) {
-            log.error("Error fetching for patient with id={}: {}",id, e.getMessage());
+            log.error("Error fetching for patient with id={}: {}", id, e.getMessage());
             return Collections.emptyList();
         }
     }

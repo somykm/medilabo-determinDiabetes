@@ -3,7 +3,6 @@ package com.abernathyclinic.medilabo_determinRisk.service;
 import com.abernathyclinic.medilabo_determinRisk.model.Patient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -16,15 +15,16 @@ import java.util.Set;
 public class DiabetesReportService {
 
     private static final Set<String> TRIGGER_TERMS = Set.of(
-            "Hemoglobin A1C", "Microalbumin", "Height", "Weight", "Smoking",
-            "Abnormal", "Cholesterol", "Dizziness", "Relapse", "Reaction", "Antibody"
+            "hemoglobin a1c", "hba1c", "microalbumin", "height", "weight", "smoking", "smoker",
+            "abnormal", "cholesterol", "dizziness", "relapse", "reaction", "antibody"
     );
 
     private final RemotePatientService remotePatientService;
     private final RemoteHistoryService remoteHistoryService;
 
     @Autowired
-    public DiabetesReportService(RemotePatientService remotePatientService, RemoteHistoryService remoteHistoryService) {
+    public DiabetesReportService(RemotePatientService remotePatientService,
+                                 RemoteHistoryService remoteHistoryService) {
         this.remotePatientService = remotePatientService;
         this.remoteHistoryService = remoteHistoryService;
     }
@@ -38,33 +38,51 @@ public class DiabetesReportService {
             return "Patient not found";
         }
 
-        log.debug("Patient found: {} {}", patient.getLastName(), patient.getFirstName());
         List<String> notes = remoteHistoryService.getNoteTextsByPatientId(patId);
-        log.debug("Received {} notes for patient with ID {}", notes.size(), patId);
+        if (notes == null) notes = List.of();
+
         int age = calculateAge(patient.getBirthdate());
-        String gender = String.valueOf(patient.getGender()).toLowerCase();
+        String genderRaw = patient.getGender() == null ? "" : patient.getGender().toString().trim().toLowerCase();
+        String gender = genderRaw.startsWith("m") ? "male"
+                : genderRaw.startsWith("f") ? "female"
+                : "unknown";
+
         int triggerCount = countTriggerTerms(notes);
-        log.info("Patient age: {}, gender: {}, trigger term count: {}", age, gender, triggerCount);
+
+        log.info("Patient age={}, gender={}, triggerCount={}", age, gender, triggerCount);
+
+        // Decision tree
+        if (triggerCount == 0) {
+            return "_None";
+        }
+
+        if (isBorderline(age, triggerCount)) {
+            return "_Borderline";
+        }
+
+        if (isInDanger(age, gender, triggerCount)) {
+            return "_In Danger";
+        }
 
         if (isEarlyOnset(age, gender, triggerCount)) {
-            return "Early Onset";
+            return "_Early Onset";
         }
-        if (isInDanger(age, gender, triggerCount)) {
-            return "In Danger";
-        }
-        if (isBorderline(age, triggerCount)) {
-            return "Borderline";
-        }
-        return "None";
+
+        return "_None";
     }
 
     private int calculateAge(LocalDate birthdate) {
+        if (birthdate.isAfter(LocalDate.now())) {
+            log.warn("Birthdate {} is in the future", birthdate);
+            return 0;
+        }
         return Period.between(birthdate, LocalDate.now()).getYears();
     }
 
     private int countTriggerTerms(List<String> notes) {
         int count = 0;
         for (String note : notes) {
+            if (note == null || note.isBlank()) continue;
             String lower = note.toLowerCase();
             for (String term : TRIGGER_TERMS) {
                 if (lower.contains(term)) {
@@ -72,32 +90,40 @@ public class DiabetesReportService {
                 }
             }
         }
-        log.debug("Total trigger terms found: {}", count);
         return count;
     }
 
+    // Borderline: age > 30 and 2–5 triggers
     private boolean isBorderline(int age, int triggerCount) {
-
-        return ((age > 30) && ((triggerCount >= 2) || (triggerCount <= 5)));
+        return (age > 30 && triggerCount >= 2 && triggerCount <= 5);
     }
 
+    // - male < 30 with 3–4 triggers
+    // - female < 30 with 4–5 triggers
+    // - age > 30 with 6–7 triggers
     private boolean isInDanger(int age, String gender, int triggerCount) {
         if (age < 30 && gender.equals("male")) {
-            return triggerCount == 3 || triggerCount == 4;
+            return (triggerCount == 3 || triggerCount == 4);
         }
         if (age < 30 && gender.equals("female")) {
-            return triggerCount == 4 || triggerCount == 5;
+            return (triggerCount == 4 || triggerCount == 5);
         }
-        return age > 30 && (triggerCount == 6 || triggerCount == 7);
+        if (age > 30) {
+            return (triggerCount >= 6 && triggerCount <= 7);
+        }
+        return false;
     }
 
+    // - male < 30 with ≥5 triggers
+    // - female < 30 with ≥6 triggers
+    // - age > 30 with ≥8 triggers
     private boolean isEarlyOnset(int age, String gender, int triggerCount) {
-        if (age < 30 && gender.equals(("male"))) {
+        if (age < 30 && gender.equals("male")) {
             return triggerCount >= 5;
         }
         if (age < 30 && gender.equals("female")) {
             return triggerCount >= 6;
         }
-        return age > 30 && triggerCount >= 8;
+        return (age > 30 && triggerCount >= 8);
     }
 }

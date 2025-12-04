@@ -6,14 +6,15 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.5.6</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.abernathyclinic</groupId>
-	<artifactId>medilabo-determinRisk </artifactId>
+	<artifactId>medilabo-determinDiabetes </artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>medilabo-determinRisk </name>
+	<name>medilabo-determinDiabetes </name>
 	<description>Spring Boot Project2 Spring 3</description>
 	<url/>
+
 	<licenses>
 		<license/>
 	</licenses>
@@ -57,6 +58,7 @@
 			<version>5.2.0</version>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>
