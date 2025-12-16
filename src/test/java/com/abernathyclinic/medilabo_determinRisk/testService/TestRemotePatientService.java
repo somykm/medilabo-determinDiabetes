@@ -12,10 +12,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-
-import java.time.LocalDate;
+import org.springframework.http.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.time.LocalDate;
 
 @ExtendWith(MockitoExtension.class)
 public class TestRemotePatientService {
@@ -44,12 +45,15 @@ public class TestRemotePatientService {
     void testGetPatientById_WhenSucceed() {
         ResponseEntity<Patient> mockResponse = new ResponseEntity<>(patient, HttpStatus.OK);
 
-        Mockito.when(restTemplate.getForEntity(
-                        Mockito.eq("http://localhost:8081/api/patient/1"),
-                        Mockito.eq(Patient.class)))
-                .thenReturn(mockResponse);
+        // Stub exchange instead of getForEntity
+        Mockito.when(restTemplate.exchange(
+                Mockito.eq("http://localhost:8085/api/patient/1"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Patient.class)
+        )).thenReturn(mockResponse);
 
-        Patient result = remotePatientService.getPatientById(1);
+        Patient result = remotePatientService.getPatientById(1, "test_token");
 
         assertNotNull(result);
         assertEquals("Fox", result.getLastName());
@@ -58,12 +62,14 @@ public class TestRemotePatientService {
 
     @Test
     void testGetPatientById_WhenException() {
-        Mockito.when(restTemplate.getForEntity(
-                        Mockito.eq("http://medilabo-demographics:8081/api/patient/2"),
-                        Mockito.eq(Patient.class)))
-                .thenThrow(new RuntimeException("Service Unavailable"));
+        Mockito.when(restTemplate.exchange(
+                Mockito.eq("http://localhost:8085/api/patient/2"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Patient.class)
+        )).thenThrow(new RuntimeException("Service Unavailable"));
 
-        Patient result = remotePatientService.getPatientById(2);
+        Patient result = remotePatientService.getPatientById(2, "test_token");
 
         assertNull(result);
     }

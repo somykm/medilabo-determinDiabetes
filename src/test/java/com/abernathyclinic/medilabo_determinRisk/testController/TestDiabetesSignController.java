@@ -8,31 +8,37 @@ import com.abernathyclinic.medilabo_determinRisk.service.DiabetesReportService;
 import com.abernathyclinic.medilabo_determinRisk.service.RemoteHistoryService;
 import com.abernathyclinic.medilabo_determinRisk.service.RemotePatientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @WebMvcTest(DiabetesSignController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class TestDiabetesSignController {
+
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private DiabetesReportService diabetesReportService;
+
     @MockitoBean
     private RemoteHistoryService remoteHistoryService;
+
     @MockitoBean
     private RemotePatientService remotePatientService;
 
@@ -53,7 +59,7 @@ public class TestDiabetesSignController {
         samplePatient.setId(1);
         samplePatient.setLastName("Jackson");
         samplePatient.setFirstName("Sean");
-        samplePatient.setBirthdate(LocalDate.of(1990, 02, 20));
+        samplePatient.setBirthdate(LocalDate.of(1990, 2, 20));
         samplePatient.setGender('M');
         samplePatient.setAddress("125 Philadelphia Ave");
         samplePatient.setPhone("666-777-8888");
@@ -65,18 +71,22 @@ public class TestDiabetesSignController {
 
     @Test
     void testGetDiabetesReport_WhenPatientIsValid() throws Exception {
-        Mockito.when(diabetesReportService.diagnoseRisk(1)).thenReturn("Borderline");
+        Mockito.when(diabetesReportService.diagnoseRisk(1, "test-token"))
+                .thenReturn("Borderline");
 
-        mockMvc.perform(get("/api/diabetes/1"))
+        mockMvc.perform(get("/api/diabetes/1")
+                        .cookie(new Cookie("AUTH_TOKEN", "test-token")))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Diabetes risk level for patient 1: Borderline"));
     }
 
     @Test
     void testGetDiabetesReport_WhenPatientNotFound() throws Exception {
-        Mockito.when(diabetesReportService.diagnoseRisk(100)).thenReturn("Patient not found");
+        Mockito.when(diabetesReportService.diagnoseRisk(100, "test-token"))
+                .thenReturn("Patient not found");
 
-        mockMvc.perform(get("/api/diabetes/100"))
+        mockMvc.perform(get("/api/diabetes/100")
+                        .cookie(new Cookie("AUTH_TOKEN", "test-token")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Patient not found!"));
     }

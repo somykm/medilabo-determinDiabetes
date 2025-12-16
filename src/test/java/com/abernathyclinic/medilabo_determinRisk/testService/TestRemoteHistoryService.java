@@ -8,15 +8,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.http.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 public class TestRemoteHistoryService {
@@ -47,11 +48,14 @@ public class TestRemoteHistoryService {
         ResponseEntity<PatientHistory[]> mockResponse =
                 new ResponseEntity<>(patientHistory, HttpStatus.OK);
 
-        Mockito.when(restTemplate.getForEntity(
-                        "http://localhost:8083/api/history/patient/1", PatientHistory[].class))
-                .thenReturn(mockResponse);
+        Mockito.when(restTemplate.exchange(
+                Mockito.eq("http://localhost:8085/api/history/patient/1"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(PatientHistory[].class)
+        )).thenReturn(mockResponse);
 
-        List<String> result = remoteHistoryService.getNoteTextsByPatientId(1);
+        List<String> result = remoteHistoryService.getNoteTextsByPatientId(1, "test_token");
 
         assertEquals(3, result.size());
         assertTrue(result.contains("Note 1"));
@@ -64,11 +68,14 @@ public class TestRemoteHistoryService {
         ResponseEntity<PatientHistory[]> emptyResponse =
                 new ResponseEntity<>(new PatientHistory[0], HttpStatus.OK);
 
-        Mockito.when(restTemplate.getForEntity(
-                        "http://medilabo-physiciannotes:8083/patient/2", PatientHistory[].class))
-                .thenReturn(emptyResponse);
+        Mockito.when(restTemplate.exchange(
+                Mockito.eq("http://localhost:8085/api/history/patient/2"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(PatientHistory[].class)
+        )).thenReturn(emptyResponse);
 
-        List<String> result = remoteHistoryService.getNoteTextsByPatientId(2);
+        List<String> result = remoteHistoryService.getNoteTextsByPatientId(2, "test_token");
 
         assertTrue(result.isEmpty());
     }
