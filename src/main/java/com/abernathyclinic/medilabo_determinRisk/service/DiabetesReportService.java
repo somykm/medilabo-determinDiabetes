@@ -29,16 +29,15 @@ public class DiabetesReportService {
         this.remoteHistoryService = remoteHistoryService;
     }
 
-    public String diagnoseRisk(Integer patId) {
+    public String diagnoseRisk(Integer patId, String authToken) {
         log.info("Diagnosing diabetes risk for patient with ID: {}", patId);
-
-        Patient patient = remotePatientService.getPatientById(patId);
+        Patient patient = remotePatientService.getPatientById(patId, authToken);
         if (patient == null) {
             log.warn("Patient with Id {} not found", patId);
             return "Patient not found";
         }
+        List<String> notes = remoteHistoryService.getNoteTextsByPatientId(patId, authToken);
 
-        List<String> notes = remoteHistoryService.getNoteTextsByPatientId(patId);
         if (notes == null) notes = List.of();
 
         int age = calculateAge(patient.getBirthdate());
@@ -51,24 +50,23 @@ public class DiabetesReportService {
 
         log.info("Patient age={}, gender={}, triggerCount={}", age, gender, triggerCount);
 
-        // Decision tree
         if (triggerCount == 0) {
-            return "_None";
+            return "None";
         }
 
         if (isBorderline(age, triggerCount)) {
-            return "_Borderline";
+            return "Borderline";
         }
 
         if (isInDanger(age, gender, triggerCount)) {
-            return "_In Danger";
+            return "In Danger";
         }
 
         if (isEarlyOnset(age, gender, triggerCount)) {
-            return "_Early Onset";
+            return "Early Onset";
         }
 
-        return "_None";
+        return "None";
     }
 
     private int calculateAge(LocalDate birthdate) {
@@ -93,14 +91,10 @@ public class DiabetesReportService {
         return count;
     }
 
-    // Borderline: age > 30 and 2–5 triggers
     private boolean isBorderline(int age, int triggerCount) {
         return (age > 30 && triggerCount >= 2 && triggerCount <= 5);
     }
 
-    // - male < 30 with 3–4 triggers
-    // - female < 30 with 4–5 triggers
-    // - age > 30 with 6–7 triggers
     private boolean isInDanger(int age, String gender, int triggerCount) {
         if (age < 30 && gender.equals("male")) {
             return (triggerCount == 3 || triggerCount == 4);
@@ -114,9 +108,6 @@ public class DiabetesReportService {
         return false;
     }
 
-    // - male < 30 with ≥5 triggers
-    // - female < 30 with ≥6 triggers
-    // - age > 30 with ≥8 triggers
     private boolean isEarlyOnset(int age, String gender, int triggerCount) {
         if (age < 30 && gender.equals("male")) {
             return triggerCount >= 5;
