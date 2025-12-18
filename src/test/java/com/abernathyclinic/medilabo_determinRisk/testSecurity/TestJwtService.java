@@ -6,24 +6,22 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.junit.jupiter.api.BeforeEach;
+
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
 public class TestJwtService {
 
-    @Mock
+    @Autowired
     private JwtService jwtService;
-
-    @BeforeEach
-    void setUp() {
-        jwtService = new JwtService();
-    }
 
     @Test
     void testParse_ValidToken() {
@@ -45,7 +43,6 @@ public class TestJwtService {
     @Test
     void testParse_InvalidToken() {
         String invalidToken = "this.is.not.a.jwt";
-
         assertThrows(JwtException.class, () -> jwtService.parse(invalidToken));
     }
 }

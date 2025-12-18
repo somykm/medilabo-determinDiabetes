@@ -49,7 +49,7 @@ public class TestRemoteHistoryService {
                 new ResponseEntity<>(patientHistory, HttpStatus.OK);
 
         Mockito.when(restTemplate.exchange(
-                Mockito.eq("http://localhost:8085/api/history/patient/1"),
+                Mockito.eq("http://medilabo-gateway:8085/api/history/patient/1"),
                 Mockito.eq(HttpMethod.GET),
                 Mockito.any(HttpEntity.class),
                 Mockito.eq(PatientHistory[].class)
@@ -69,7 +69,7 @@ public class TestRemoteHistoryService {
                 new ResponseEntity<>(new PatientHistory[0], HttpStatus.OK);
 
         Mockito.when(restTemplate.exchange(
-                Mockito.eq("http://localhost:8085/api/history/patient/2"),
+                Mockito.eq("http://medilabo-demographics:8085/api/history/patient/2"),
                 Mockito.eq(HttpMethod.GET),
                 Mockito.any(HttpEntity.class),
                 Mockito.eq(PatientHistory[].class)

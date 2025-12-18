@@ -47,7 +47,7 @@ public class TestRemotePatientService {
 
         // Stub exchange instead of getForEntity
         Mockito.when(restTemplate.exchange(
-                Mockito.eq("http://localhost:8085/api/patient/1"),
+                Mockito.eq("http://medilabo-gateway:8085/api/patient/1"),
                 Mockito.eq(HttpMethod.GET),
                 Mockito.any(HttpEntity.class),
                 Mockito.eq(Patient.class)
@@ -63,7 +63,7 @@ public class TestRemotePatientService {
     @Test
     void testGetPatientById_WhenException() {
         Mockito.when(restTemplate.exchange(
-                Mockito.eq("http://localhost:8085/api/patient/2"),
+                Mockito.eq("http://medilabo-demographics:8085/api/patient/2"),
                 Mockito.eq(HttpMethod.GET),
                 Mockito.any(HttpEntity.class),
                 Mockito.eq(Patient.class)

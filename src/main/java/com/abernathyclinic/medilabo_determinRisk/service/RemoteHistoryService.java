@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 public class RemoteHistoryService {
     private final RestTemplate restTemplate;
-    private final String historyUrl = "http://localhost:8085/api/history";
+    private final String historyUrl = "http://localhost:8083/api/history";
 
     @Autowired
     public RemoteHistoryService(RestTemplate restTemplate) {
