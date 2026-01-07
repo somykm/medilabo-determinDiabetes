@@ -1,6 +1,6 @@
-package com.abernathyclinic.medilabo_determinRisk.service;
+package com.abernathyclinic.medilabo_determinDiabetes.service;
 
-import com.abernathyclinic.medilabo_determinRisk.model.Patient;
+import com.abernathyclinic.medilabo_determinDiabetes.model.Patient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -13,26 +13,26 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 @Service
 public class RemotePatientService {
+
     private final RestTemplate restTemplate;
-    private final String patUrl = "http://localhost:8081/api/patient";
+    private static final String PAT_URL = "http://medilabo-demographics:8081/api/patient";
 
     @Autowired
     public RemotePatientService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    public Patient getPatientById(Integer id, String authToken) {
+    public Patient getPatientById(Integer id, String authHeader) {
         log.info("Fetching patient with id={} via gateway", id);
 
         HttpHeaders headers = new HttpHeaders();
-        if (authToken != null && !authToken.isBlank()) {
-            headers.add(HttpHeaders.COOKIE, "AUTH_TOKEN=" + authToken);
+        if (authHeader != null && !authHeader.isBlank()) {
+            headers.set(HttpHeaders.AUTHORIZATION, authHeader);
         }
         HttpEntity<Void> entity = new HttpEntity<>(headers);
-
         try {
             ResponseEntity<Patient> response = restTemplate.exchange(
-                    patUrl + "/" + id,
+                    PAT_URL + "/" + id,
                     HttpMethod.GET,
                     entity,
                     Patient.class

@@ -1,6 +1,6 @@
-package com.abernathyclinic.medilabo_determinRisk.service;
+package com.abernathyclinic.medilabo_determinDiabetes.service;
 
-import com.abernathyclinic.medilabo_determinRisk.model.PatientHistory;
+import com.abernathyclinic.medilabo_determinDiabetes.model.PatientHistory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -12,36 +12,45 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
 public class RemoteHistoryService {
+
     private final RestTemplate restTemplate;
-    private final String historyUrl = "http://localhost:8083/api/history";
+    //private final String historyUrl = "http://medilabo-physiciannotes:8083/api/history";
+    private static final String HISTORY_URL = "http://medilabo-physiciannotes:8083/api/history";
 
     @Autowired
     public RemoteHistoryService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    public List<String> getNoteTextsByPatientId(Integer patId, String authToken) {
+    public List<String> getNoteTextsByPatientId(Integer patId, String authHeader) {
         HttpHeaders headers = new HttpHeaders();
-        if (authToken != null && !authToken.isBlank()) {
-            headers.add(HttpHeaders.COOKIE, "AUTH_TOKEN=" + authToken);
+        if (authHeader != null && !authHeader.isBlank()) {
+            headers.set(HttpHeaders.AUTHORIZATION, authHeader);
         }
         HttpEntity<Void> entity = new HttpEntity<>(headers);
-
         try {
             ResponseEntity<PatientHistory[]> response = restTemplate.exchange(
-                    historyUrl + "/patient/" + patId,
+                    HISTORY_URL + "/patient/" + patId,
                     HttpMethod.GET,
                     entity,
                     PatientHistory[].class
             );
-            return Arrays.stream(response.getBody())
+
+            PatientHistory[] body = response.getBody();
+            if (body == null) {
+                return List.of();
+            }
+            return Arrays.stream(body)
                     .map(PatientHistory::getNotes)
+                    .filter(Objects::nonNull)
                     .flatMap(List::stream)
                     .toList();
+
         } catch (Exception e) {
             log.error("Error fetching notes for patient {}: {}", patId, e.getMessage());
             return List.of();

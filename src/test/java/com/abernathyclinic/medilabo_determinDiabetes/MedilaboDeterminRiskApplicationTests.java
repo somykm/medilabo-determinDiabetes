@@ -1,4 +1,4 @@
-//package com.abernathyclinic.medilabo_determinRisk;
+//package com.abernathyclinic.medilabo_determinDiabetes;
 //
 //import org.junit.jupiter.api.Test;
 //import org.springframework.boot.test.context.SpringBootTest;

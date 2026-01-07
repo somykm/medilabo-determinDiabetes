@@ -1,4 +1,4 @@
-package com.abernathyclinic.medilabo_determinRisk.model;
+package com.abernathyclinic.medilabo_determinDiabetes.model;
 
 import lombok.Data;
 

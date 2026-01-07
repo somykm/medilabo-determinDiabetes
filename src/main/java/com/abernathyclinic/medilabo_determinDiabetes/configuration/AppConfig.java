@@ -1,4 +1,4 @@
-package com.abernathyclinic.medilabo_determinRisk.configuration;
+package com.abernathyclinic.medilabo_determinDiabetes.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
