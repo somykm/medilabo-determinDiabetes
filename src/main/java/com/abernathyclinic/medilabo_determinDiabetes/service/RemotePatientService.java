@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 public class RemotePatientService {
 
     private final RestTemplate restTemplate;
-    private static final String PAT_URL = "http://localhost:8081/api/patient";
+    private static final String PAT_URL = "http://medilabo-demographics:8081/api/patient";
 
     @Autowired
     public RemotePatientService(RestTemplate restTemplate) {

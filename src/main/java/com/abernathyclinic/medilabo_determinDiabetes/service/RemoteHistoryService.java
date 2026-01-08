@@ -16,7 +16,7 @@ import java.util.Objects;
 public class RemoteHistoryService {
 
     private final RestTemplate restTemplate;
-    private static final String HISTORY_URL = "http://localhost:8083/api/history";
+    private static final String HISTORY_URL = "http://medilabo-physicianNote:8083/api/history";
 
     @Autowired
     public RemoteHistoryService(RestTemplate restTemplate) {
