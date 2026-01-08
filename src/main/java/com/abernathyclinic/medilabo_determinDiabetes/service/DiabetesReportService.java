@@ -30,15 +30,15 @@ public class DiabetesReportService {
         this.remoteHistoryService = remoteHistoryService;
     }
 
-    public String diagnoseRisk(Integer patId, String authHeader) {
+    public String diagnoseRisk(Integer patId) {
         log.info("Diagnosing diabetes risk for patient with ID: {}", patId);
 
-        Patient patient = remotePatientService.getPatientById(patId, authHeader);
+        Patient patient = remotePatientService.getPatientById(patId);
         if (patient == null) {
             log.warn("Patient with Id {} not found", patId);
             return "Patient not found";
         }
-        List<String> notes = remoteHistoryService.getNoteTextsByPatientId(patId, authHeader);
+        List<String> notes = remoteHistoryService.getNoteTextsByPatientId(patId);
         if (notes == null) notes = List.of();
 
         int age = calculateAge(patient.getBirthdate());

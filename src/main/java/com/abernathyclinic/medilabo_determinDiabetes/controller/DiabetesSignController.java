@@ -22,10 +22,9 @@ public class DiabetesSignController {
 
     @GetMapping("/{patId}")
     public ResponseEntity<String> getDiabetesReport(
-            @PathVariable Integer patId,
-            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+            @PathVariable Integer patId) {
         log.info("Diabetes risk request for patient {}", patId);
-        String riskLevel = reportingService.diagnoseRisk(patId, authHeader);
+        String riskLevel = reportingService.diagnoseRisk(patId);
 
         if ("Patient not found".equals(riskLevel)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Patient not found!");
